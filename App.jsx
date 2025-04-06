@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { colors, fontType } from './src/theme';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LevelTab from './src/components/LevelTab';
+import WorkoutCard from './src/components/WorkoutCard';
+
 
 const App = () => {
   const [selectedLevel, setSelectedLevel] = useState('Beginner');
@@ -52,54 +55,44 @@ const App = () => {
 
       <View style={styles.tabContainer}>
         {levels.map(level => (
-          <TouchableOpacity
+          <LevelTab
             key={level}
+            level={level}
+            isActive={selectedLevel === level}
             onPress={() => setSelectedLevel(level)}
-            style={[
-              styles.tab,
-              selectedLevel === level && styles.tabActive
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                selectedLevel === level && styles.tabTextActive
-              ]}
-            >
-              {level}
-            </Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
 
       {/* Featured Workout */}
-      <View style={styles.featuredCard}>
-        <Image
-          source={{ uri: workouts[0].image }}
-          style={styles.featuredImage}
-        />
-        <View style={styles.featuredOverlay}>
-          <Text style={styles.featuredBadge}>Latihan Hari Ini</Text>
-          <Text style={styles.featuredTitle}>{workouts[0].title}</Text>
-          <Text style={styles.featuredDetails}>
-            {workouts[0].duration} | {workouts[0].calories} | {workouts[0].exercises}
-          </Text>
+      <TouchableOpacity onPress={() => console.log('Klik Featured Workout')}>
+        <View style={styles.featuredCard}>
+          <Image
+            source={{ uri: workouts[0].image }}
+            style={styles.featuredImage}
+          />
+          <View style={styles.featuredOverlay}>
+            <Text style={styles.featuredBadge}>Latihan Hari Ini</Text>
+            <Text style={styles.featuredTitle}>{workouts[0].title}</Text>
+            <Text style={styles.featuredDetails}>
+              {workouts[0].duration} | {workouts[0].calories} | {workouts[0].exercises}
+            </Text>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Latihan {selectedLevel}</Text>
 
       {/* Workout List */}
-      {workouts.slice(1).map((item, index) => (
-        <View key={index} style={styles.card}>
-          <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSub}>
-              {item.duration} | {item.calories}
-            </Text>
-          </View>
-          <Image source={{ uri: item.image }} style={styles.cardImage} />
-        </View>
+      {workouts.slice(1).map((item, i) => (
+        <WorkoutCard
+          key={i}
+          title={item.title}
+          duration={item.duration}
+          calories={item.calories}
+          exercises={item.exercises}
+          image={item.image}
+        />
       ))}
     </ScrollView>
   );
