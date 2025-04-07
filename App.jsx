@@ -9,10 +9,7 @@ import {
   StatusBar
 } from 'react-native';
 import { colors, fontType } from './src/theme';
-import Icon from 'react-native-vector-icons/Ionicons';
-import LevelTab from './src/components/LevelTab';
-import WorkoutCard from './src/components/WorkoutCard';
-
+import { LevelTab, WorkoutCard } from './src/components';
 
 const App = () => {
   const [selectedLevel, setSelectedLevel] = useState('Beginner');
@@ -49,61 +46,71 @@ const App = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <Text style={styles.header}>Sportify</Text>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.header}>Sportify</Text>
 
-      <View style={styles.tabContainer}>
-        {levels.map(level => (
-          <LevelTab
-            key={level}
-            level={level}
-            isActive={selectedLevel === level}
-            onPress={() => setSelectedLevel(level)}
+        {/* Horizontal Scroll for LevelTab */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabContainer}
+        >
+          {levels.map(level => (
+            <LevelTab
+              key={level}
+              level={level}
+              isActive={selectedLevel === level}
+              onPress={() => setSelectedLevel(level)}
+            />
+          ))}
+        </ScrollView>
+
+        {/* Featured Workout */}
+        <TouchableOpacity onPress={() => console.log('Klik Featured Workout')}>
+          <View style={styles.featuredCard}>
+            <Image
+              source={{ uri: workouts[0].image }}
+              style={styles.featuredImage}
+            />
+            <View style={styles.featuredOverlay}>
+              <Text style={styles.featuredBadge}>Latihan Hari Ini</Text>
+              <Text style={styles.featuredTitle}>{workouts[0].title}</Text>
+              <Text style={styles.featuredDetails}>
+                {workouts[0].duration} | {workouts[0].calories} | {workouts[0].exercises}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        <Text style={styles.sectionTitle}>Latihan {selectedLevel}</Text>
+
+        {/* Workout List */}
+        {workouts.slice(1).map((item, i) => (
+          <WorkoutCard
+            key={i}
+            title={item.title}
+            duration={item.duration}
+            calories={item.calories}
+            exercises={item.exercises}
+            image={item.image}
           />
         ))}
-      </View>
-
-      {/* Featured Workout */}
-      <TouchableOpacity onPress={() => console.log('Klik Featured Workout')}>
-        <View style={styles.featuredCard}>
-          <Image
-            source={{ uri: workouts[0].image }}
-            style={styles.featuredImage}
-          />
-          <View style={styles.featuredOverlay}>
-            <Text style={styles.featuredBadge}>Latihan Hari Ini</Text>
-            <Text style={styles.featuredTitle}>{workouts[0].title}</Text>
-            <Text style={styles.featuredDetails}>
-              {workouts[0].duration} | {workouts[0].calories} | {workouts[0].exercises}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      <Text style={styles.sectionTitle}>Latihan {selectedLevel}</Text>
-
-      {/* Workout List */}
-      {workouts.slice(1).map((item, i) => (
-        <WorkoutCard
-          key={i}
-          title={item.title}
-          duration={item.duration}
-          calories={item.calories}
-          exercises={item.exercises}
-          image={item.image}
-        />
-      ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: colors.black
+  },
+  contentContainer: {
     paddingHorizontal: 16,
-    paddingTop: 40
+    paddingTop: 40,
+    paddingBottom: 30
   },
   header: {
     color: colors.white,
@@ -113,24 +120,8 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
+    gap: 10,
     marginBottom: 20
-  },
-  tab: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: colors.darkGray,
-    marginRight: 10
-  },
-  tabActive: {
-    backgroundColor: colors.primary
-  },
-  tabText: {
-    color: colors.white,
-    fontFamily: fontType['Montserrat-Regular']
-  },
-  tabTextActive: {
-    fontFamily: fontType['Montserrat-Bold']
   },
   featuredCard: {
     position: 'relative',
@@ -178,35 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: fontType['Montserrat-SemiBold'],
     marginBottom: 16
-  },
-  card: {
-    backgroundColor: colors.darkGray,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  cardText: {
-    flex: 1,
-    paddingRight: 10
-  },
-  cardTitle: {
-    color: colors.white,
-    fontSize: 16,
-    fontFamily: fontType['Montserrat-Bold'],
-    marginBottom: 6
-  },
-  cardSub: {
-    color: colors.gray,
-    fontSize: 13,
-    fontFamily: fontType['Montserrat-Regular']
-  },
-  cardImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12
   }
 });
 
