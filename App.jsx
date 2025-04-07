@@ -95,6 +95,7 @@ const App = () => {
             calories={item.calories}
             exercises={item.exercises}
             image={item.image}
+            progress={75}
           />
         ))}
       </ScrollView>

@@ -1,4 +1,3 @@
-// src/components/WorkoutCard.jsx
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, fontType } from '../theme';
@@ -9,6 +8,7 @@ const WorkoutCard = ({
   calories, 
   exercises, 
   image, 
+  progress = 0, // nilai progress dalam persentase, misalnya 50 berarti 50%
   highlight = false 
 }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -23,6 +23,10 @@ const WorkoutCard = ({
           {showDetails && exercises && (
             <Text style={styles.cardDetails}>{exercises}</Text>
           )}
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+          </View>
+          <Text style={styles.progressText}>{progress}% selesai</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -67,6 +71,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fontType['Montserrat-Regular'],
     marginTop: 4
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: colors.gray,
+    borderRadius: 4,
+    marginTop: 8,
+    width: '100%'
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 4
+  },
+  progressText: {
+    fontSize: 12,
+    color: colors.white,
+    marginTop: 4,
+    fontFamily: fontType['Montserrat-Regular']
   }
 });
 
