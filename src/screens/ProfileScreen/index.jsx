@@ -1,10 +1,14 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import ProfileCard from '../../components/ProfileCard';
 import WorkoutCard from '../../components/WorkoutCard';
 import { colors, fontType } from '../../theme';
 
 export function ProfileScreen() {
+  const navigation = useNavigation();
+
   const workouts = [
     {
       id: 1,
@@ -30,9 +34,17 @@ export function ProfileScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.header}>Profil Saya</Text>
       <ProfileCard />
+
+      <Pressable
+        style={styles.achievementCard}
+        onPress={() => navigation.navigate('AchievementScreen')}
+      >
+        <Icon name="trophy" size={20} color={colors.white} />
+        <Text style={styles.achievementText}>Achievement</Text>
+      </Pressable>
 
       <Text style={styles.subHeader}>Latihan yang Sedang Dijalani</Text>
       <View style={styles.listContainer}>
@@ -56,22 +68,40 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black,
     paddingHorizontal: 16,
     paddingTop: 40,
-    paddingBottom: 30
+    paddingBottom: 30,
   },
   header: {
     fontSize: 24,
-    color: colors.white,
+    color: colors.primary,
     fontFamily: fontType['Montserrat-Bold'],
-    marginBottom: 20
+    marginBottom: 20,
+    textAlign: 'center',
   },
   subHeader: {
     fontSize: 18,
     color: colors.white,
     fontFamily: fontType['Montserrat-SemiBold'],
-    marginBottom: 16
+    marginBottom: 16,
   },
   listContainer: {
     gap: 16,
-    marginBottom: 30
-  }
+    marginBottom: 30,
+  },
+  achievementCard: {
+    backgroundColor: colors.grey || '#2C2C2E',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  achievementText: {
+    fontSize: 16,
+    color: colors.white,
+    fontFamily: fontType['Montserrat-SemiBold'],
+  },
 });

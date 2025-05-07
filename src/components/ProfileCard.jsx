@@ -1,4 +1,5 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { colors, fontType } from '../theme';
 
 const ProfileCard = () => {
   return (
@@ -7,7 +8,7 @@ const ProfileCard = () => {
         source={{ uri: 'https://i.pravatar.cc/150?img=11' }}
         style={styles.avatar}
       />
-      <Text style={styles.name}>Ahmad Ari Firmansyah</Text>
+      <Text style={styles.name}>Aharfi</Text>
       <Text style={styles.email}>Aharfi@gmail.com</Text>
     </View>
   );
@@ -16,12 +17,14 @@ const ProfileCard = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.gray || '#2C2C2E',
     padding: 20,
     marginHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 20,
     borderRadius: 15,
-    elevation: 3,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#444',
   },
   avatar: {
     width: 90,
@@ -31,11 +34,14 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    fontWeight: 'bold',
+    color: colors.white,
+    fontFamily: fontType['Montserrat-Bold'],
+    marginBottom: 4,
   },
   email: {
-    color: '#777',
-    fontSize: 15,
+    fontSize: 14,
+    color: '#aaa',
+    fontFamily: fontType['Montserrat-Regular'],
   },
 });
 

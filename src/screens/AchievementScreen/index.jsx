@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import { colors, fontType } from '../../theme';
 
@@ -55,21 +56,22 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   card: {
-    backgroundColor: colors.grey,
+    backgroundColor: colors.gray,
     flexDirection: 'row',
     padding: 16,
     borderRadius: 16,
     marginBottom: 16,
-    alignItems: 'flex-start', // supaya teks bisa multiline
+    alignItems: 'flex-start',
     gap: 12
   },
   icon: {
     width: 60,
     height: 60,
-    borderRadius: 12
+    borderRadius: 12,
+    resizeMode: 'cover'
   },
   textContainer: {
-    flex: 1 // ini penting supaya teks bisa melebar
+    flex: 1
   },
   title: {
     fontSize: 18,
