@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Alert,
   TextInput,
+  Animated,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import ArticleCard from '../../components/ArticleCard';
@@ -18,6 +18,20 @@ const DiscoverScreen = ({ route, navigation }) => {
   const isFocused = useIsFocused();
   const [articles, setArticles] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
+
+  // 🔸 Animated values
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const diffClampY = Animated.diffClamp(scrollY, 0, 120); // 120 = tinggi header
+  const headerTranslateY = diffClampY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [0, -120],
+    extrapolate: 'clamp',
+  });
+  const fabTranslateY = diffClampY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [0, 100],
+    extrapolate: 'clamp',
+  });
 
   const getArticles = async () => {
     try {
@@ -75,36 +89,68 @@ const DiscoverScreen = ({ route, navigation }) => {
     article.description.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
+  const AnimatedArticleCard = ({ article, index }) => {
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start();
+    }, []);
+
+    return (
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <ArticleCard
+          title={article.title}
+          description={article.description}
+          image={article.image}
+          isFavorite={article.isFavorite}
+          onPress={() => navigation.navigate('ArticleDetail', { article })}
+          onFavoritePress={() => toggleFavorite(article.id)}
+          onEditPress={() => navigation.navigate('EditArticle', { articleId: article.id })}
+        />
+      </Animated.View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Articles & Tips</Text>
+      {/* 🔸 Header dan SearchBar digabung & dianimasikan */}
+      <Animated.View style={[styles.headerWrapper, { transform: [{ translateY: headerTranslateY }] }]}>
+        <Text style={styles.header}>Articles & Tips</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Cari artikel..."
+          placeholderTextColor="#ccc"
+          value={searchKeyword}
+          onChangeText={setSearchKeyword}
+        />
+      </Animated.View>
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Cari artikel..."
-        placeholderTextColor="#ccc"
-        value={searchKeyword}
-        onChangeText={setSearchKeyword}
-      />
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredArticles.map((article) => (
-          <ArticleCard
-            key={article.id}
-            title={article.title}
-            description={article.description}
-            image={article.image}
-            isFavorite={article.isFavorite}
-            onPress={() => navigation.navigate('ArticleDetail', { article })}
-            onFavoritePress={() => toggleFavorite(article.id)}
-            onEditPress={() => navigation.navigate('EditArticle', { articleId: article.id })}
-          />
+      {/* 🔸 ScrollView dengan paddingTop diperbesar */}
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 160, paddingBottom: 130 }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+      >
+        {filteredArticles.map((article, index) => (
+          <AnimatedArticleCard key={article.id} article={article} index={index} />
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AddArticle')}>
-        <Icon name="add" size={28} color={colors.white} />
-      </TouchableOpacity>
+      {/* 🔸 FAB */}
+      <Animated.View style={[styles.fab, { transform: [{ translateY: fabTranslateY }] }]}>
+        <TouchableOpacity onPress={() => navigation.navigate('AddArticle')}>
+          <Icon name="add" size={28} color={colors.white} />
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 };
@@ -113,14 +159,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.black,
-    padding: 16,
+    paddingHorizontal: 16,
+  },
+  headerWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.black,
     paddingTop: 40,
+    paddingBottom: 20,
+    zIndex: 1000,
+    paddingHorizontal: 16,
   },
   header: {
     fontSize: 18,
     fontFamily: fontType['Montserrat-Bold'],
     color: colors.primary,
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
   },
   searchInput: {
@@ -128,7 +184,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    marginBottom: 16,
     fontSize: 14,
     fontFamily: fontType['Montserrat-Regular'],
     color: colors.white,
