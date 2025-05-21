@@ -21,7 +21,7 @@ const DiscoverScreen = ({ route, navigation }) => {
 
   // 🔸 Animated values
   const scrollY = useRef(new Animated.Value(0)).current;
-  const diffClampY = Animated.diffClamp(scrollY, 0, 120); // 120 = tinggi header
+  const diffClampY = Animated.diffClamp(scrollY, 0, 120);
   const headerTranslateY = diffClampY.interpolate({
     inputRange: [0, 120],
     outputRange: [0, -120],
@@ -118,7 +118,6 @@ const DiscoverScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* 🔸 Header dan SearchBar digabung & dianimasikan */}
       <Animated.View style={[styles.headerWrapper, { transform: [{ translateY: headerTranslateY }] }]}>
         <Text style={styles.header}>Articles & Tips</Text>
         <TextInput
@@ -129,8 +128,6 @@ const DiscoverScreen = ({ route, navigation }) => {
           onChangeText={setSearchKeyword}
         />
       </Animated.View>
-
-      {/* 🔸 ScrollView dengan paddingTop diperbesar */}
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 160, paddingBottom: 130 }}
