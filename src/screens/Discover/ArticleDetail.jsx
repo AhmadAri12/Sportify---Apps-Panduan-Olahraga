@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { deleteArticle } from '../../services/api'; // API service
 
@@ -29,13 +29,12 @@ const ArticleDetail = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Image source={{ uri: article.image }} style={styles.image} />
       <Text style={styles.title}>{article.title}</Text>
       <Text style={styles.description}>{article.description}</Text>
       <Text style={styles.createdAt}>Created on: {new Date(article.createdAt).toLocaleDateString()}</Text>
 
-      {/* Memberikan jarak yang lebih rapat antara createdAt dan tombol */}
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
           <Text style={styles.buttonText}>Edit</Text>
@@ -44,16 +43,18 @@ const ArticleDetail = ({ route }) => {
           <Text style={styles.buttonText}>Hapus</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
     backgroundColor: '#1e1e1e',
-    justifyContent: 'flex-start', // Memastikan konten dimulai dari atas
+    justifyContent: 'flex-start',
+    paddingTop: 40,  // Memberikan jarak atas
+    paddingBottom: 20,  // Memberikan ruang bawah untuk tombol
   },
   image: {
     width: '100%',
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   createdAt: {
     fontSize: 14,
     color: '#999',
-    marginBottom: 15,  // Memberikan jarak antara createdAt dan tombol
+    marginBottom: 20,  // Memberikan jarak antara createdAt dan tombol
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -98,3 +99,4 @@ const styles = StyleSheet.create({
 });
 
 export default ArticleDetail;
+  
