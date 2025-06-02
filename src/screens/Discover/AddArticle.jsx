@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  Button,
-  StyleSheet,
-  Text,
-  Image,
-  Alert,
-} from 'react-native';
-import { colors, fontType } from '../../theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { addArticle } from '../../services/api'; // API service
+import { useNavigation } from '@react-navigation/native';
 
-const AddArticle = ({ navigation }) => {
+const AddArticle = ({ route }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const navigation = useNavigation();
 
   const handleSubmit = async () => {
     if (!title || !description || !imageUrl) {
@@ -23,31 +16,22 @@ const AddArticle = ({ navigation }) => {
     }
 
     try {
-      const savedArticles = await AsyncStorage.getItem('articles');
-      const existingArticles = savedArticles ? JSON.parse(savedArticles) : [];
-
-      const newId = existingArticles.length > 0
-        ? Math.max(...existingArticles.map(a => a.id)) + 1
-        : 1;
-
       const newArticle = {
-        id: newId,
         title,
         description,
         image: imageUrl,
         isFavorite: false,
+        createdAt: new Date().toISOString(), // Tambahkan createdAt
       };
-
-      const updatedArticles = [...existingArticles, newArticle];
-      await AsyncStorage.setItem('articles', JSON.stringify(updatedArticles));
-
-      // Bersihkan form
-      setTitle('');
-      setDescription('');
-      setImageUrl('');
-
+      await addArticle(newArticle); // Kirim data ke API
       Alert.alert('Sukses', 'Artikel berhasil ditambahkan!');
-      navigation.goBack();
+      
+      // Menyegarkan artikel di DiscoverScreen setelah ditambahkan
+      if (route.params?.refreshArticles) {
+        route.params.refreshArticles(); // Panggil refreshArticles untuk menyegarkan daftar
+      }
+
+      navigation.goBack(); // Navigasi kembali ke DiscoverScreen
     } catch (error) {
       console.error('Gagal menyimpan artikel:', error);
       Alert.alert('Error', 'Gagal menyimpan artikel');
@@ -56,38 +40,25 @@ const AddArticle = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Judul Artikel</Text>
       <TextInput
+        style={styles.input}
+        placeholder="Masukkan judul"
         value={title}
         onChangeText={setTitle}
-        placeholder="Masukkan judul"
-        style={styles.input}
-        placeholderTextColor={colors.gray}
       />
-
-      <Text style={styles.label}>Deskripsi</Text>
       <TextInput
+        style={styles.input}
+        placeholder="Masukkan deskripsi"
         value={description}
         onChangeText={setDescription}
-        placeholder="Masukkan deskripsi"
-        style={styles.input}
-        placeholderTextColor={colors.gray}
       />
-
-      <Text style={styles.label}>URL Gambar</Text>
       <TextInput
+        style={styles.input}
+        placeholder="Masukkan URL gambar"
         value={imageUrl}
         onChangeText={setImageUrl}
-        placeholder="https://..."
-        style={styles.input}
-        placeholderTextColor={colors.gray}
       />
-
-      {imageUrl !== '' && (
-        <Image source={{ uri: imageUrl }} style={styles.imagePreview} />
-      )}
-
-      <Button title="Tambah Artikel" onPress={handleSubmit} color={colors.primary} />
+      <Button title="Tambah Artikel" onPress={handleSubmit} color="#FF6F00" />
     </View>
   );
 };
@@ -95,27 +66,16 @@ const AddArticle = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
-    padding: 16,
-  },
-  label: {
-    color: colors.white,
-    marginTop: 10,
-    fontFamily: fontType['Montserrat-Regular'],
+    backgroundColor: '#1e1e1e',
+    padding: 20,
+    paddingTop: 40,
   },
   input: {
-    borderWidth: 1,
-    borderColor: colors.primary,
+    backgroundColor: '#2c2c2c',
     padding: 10,
-    marginTop: 5,
+    marginBottom: 12,
     borderRadius: 8,
-    color: colors.white,
-  },
-  imagePreview: {
-    width: '100%',
-    height: 150,
-    borderRadius: 8,
-    marginTop: 10,
+    color: '#fff',
   },
 });
 

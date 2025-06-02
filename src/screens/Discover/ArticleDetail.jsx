@@ -1,122 +1,99 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  SafeAreaView,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, fontType } from '../../theme';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { deleteArticle } from '../../services/api'; // API service
 
-const ArticleDetail = ({ route, navigation }) => {
-  const { article } = route.params;
+const ArticleDetail = ({ route }) => {
+  const { article, refreshArticles } = route.params; // Dapatkan artikel dan fungsi refresh dari params
+  const navigation = useNavigation();
 
   const handleDelete = async () => {
     try {
-      const savedArticles = await AsyncStorage.getItem('articles');
-      const articles = savedArticles ? JSON.parse(savedArticles) : [];
-
-      const filteredArticles = articles.filter((a) => a.id !== article.id);
-      await AsyncStorage.setItem('articles', JSON.stringify(filteredArticles));
-
+      await deleteArticle(article.id); // Hapus artikel
       Alert.alert('Artikel Dihapus', `Artikel "${article.title}" berhasil dihapus.`, [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('Discover'),
+          onPress: () => {
+            refreshArticles(); // Panggil refreshArticles untuk menyegarkan data
+            navigation.navigate('Discover');
+          },
         },
       ]);
     } catch (error) {
-      console.error(error);
-      Alert.alert('Terjadi Kesalahan', 'Gagal menghapus artikel.');
+      Alert.alert('Error', 'Gagal menghapus artikel');
     }
   };
 
   const handleEdit = () => {
-    navigation.navigate('EditArticle', { articleId: article.id });
+    navigation.navigate('EditArticle', { articleId: article.id, refreshArticles });
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Image source={{ uri: article.image }} style={styles.image} />
-          <Text style={styles.title}>{article.title}</Text>
-          <Text style={styles.description}>{article.description}</Text>
-        </ScrollView>
+    <View style={styles.container}>
+      <Image source={{ uri: article.image }} style={styles.image} />
+      <Text style={styles.title}>{article.title}</Text>
+      <Text style={styles.description}>{article.description}</Text>
+      <Text style={styles.createdAt}>Created on: {new Date(article.createdAt).toLocaleDateString()}</Text>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-            <Text style={styles.buttonText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.buttonText}>Hapus</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Memberikan jarak yang lebih rapat antara createdAt dan tombol */}
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.button} onPress={handleEdit}>
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#FF3B30' }]} onPress={handleDelete}>
+          <Text style={styles.buttonText}>Hapus</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.black,
-  },
   container: {
     flex: 1,
     padding: 16,
-    paddingTop: 50,
-    justifyContent: 'space-between',
-  },
-  scrollContent: {
-    paddingBottom: 24,
+    backgroundColor: '#1e1e1e',
+    justifyContent: 'flex-start', // Memastikan konten dimulai dari atas
   },
   image: {
     width: '100%',
-    height: 350,
-    borderRadius: 8,
-    marginBottom: 16,
+    height: 250,  // Ukuran gambar yang cukup besar untuk menonjolkan produk
+    marginBottom: 15,  // Jarak gambar dengan judul
+    borderRadius: 10,
   },
   title: {
     fontSize: 22,
-    color: colors.primary,
-    fontFamily: fontType['Montserrat-Bold'],
-    marginBottom: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,  // Mengurangi jarak antara judul dan deskripsi
   },
   description: {
     fontSize: 16,
-    color: colors.white,
-    fontFamily: fontType['Montserrat-Regular'],
-    lineHeight: 24,
+    color: '#666',
+    marginBottom: 10,  // Jarak antara deskripsi dan tanggal
   },
-  buttonContainer: {
+  createdAt: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 15,  // Memberikan jarak antara createdAt dan tombol
+  },
+  buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
-    marginTop: 16,
+    gap: 10,  // Mengurangi jarak antara tombol Edit dan Hapus
   },
-  editButton: {
+  button: {
     flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#FF6F00',
+    borderRadius: 5,
     alignItems: 'center',
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: colors.red || '#FF3B30',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    marginHorizontal: 5,
   },
   buttonText: {
-    color: colors.white,
+    color: '#fff',
     fontSize: 16,
-    fontFamily: fontType['Montserrat-Bold'],
+    fontWeight: 'bold',
   },
 });
 

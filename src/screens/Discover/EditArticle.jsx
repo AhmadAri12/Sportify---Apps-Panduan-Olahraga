@@ -1,36 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, fontType } from '../../theme';
+import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { getArticleById, updateArticle } from '../../services/api'; // API service
+import { useRoute, useNavigation } from '@react-navigation/native';
 
-const EditArticle = ({ route, navigation }) => {
-  const { articleId } = route.params;
-
+const EditArticle = () => {
+  const { articleId, refreshArticles } = useRoute().params; // Dapatkan ID artikel dan fungsi refresh dari params
   const [article, setArticle] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchArticle = async () => {
-      const savedArticles = await AsyncStorage.getItem('articles');
-      const articles = savedArticles ? JSON.parse(savedArticles) : [];
-      const found = articles.find((a) => a.id === articleId);
-      if (found) {
-        setArticle(found);
-        setTitle(found.title);
-        setDescription(found.description);
-        setImage(found.image);
-      } else {
-        Alert.alert('Artikel tidak ditemukan');
-        navigation.goBack();
+      try {
+        const res = await getArticleById(articleId);
+        setArticle(res.data);
+        setTitle(res.data.title);
+        setDescription(res.data.description);
+        setImage(res.data.image);
+      } catch (error) {
+        console.error('Gagal mengambil artikel:', error);
+        Alert.alert('Error', 'Gagal mengambil artikel');
       }
     };
 
@@ -40,86 +31,50 @@ const EditArticle = ({ route, navigation }) => {
   const handleSaveChanges = async () => {
     if (title && description) {
       const updatedArticle = {
-        id: article.id,
+        ...article,
         title,
         description,
         image,
-        isFavorite: article.isFavorite,
+        createdAt: article.createdAt, // Tetap pertahankan tanggal dibuat
       };
 
-      const savedArticles = await AsyncStorage.getItem('articles');
-      const existingArticles = savedArticles ? JSON.parse(savedArticles) : [];
-
-      const updatedArticles = existingArticles.map((a) =>
-        a.id === article.id ? updatedArticle : a
-      );
-
-      await AsyncStorage.setItem('articles', JSON.stringify(updatedArticles));
-      Alert.alert('Berhasil', `Artikel "${title}" berhasil diperbarui.`);
-      navigation.navigate('Discover');
+      try {
+        await updateArticle(articleId, updatedArticle);
+        Alert.alert('Sukses', `Artikel "${title}" berhasil diperbarui.`);
+        refreshArticles(); // Panggil refreshArticles untuk menyegarkan data
+        navigation.goBack();
+      } catch (error) {
+        console.error('Gagal memperbarui artikel:', error);
+        Alert.alert('Error', 'Gagal memperbarui artikel');
+      }
     } else {
       Alert.alert('Formulir Tidak Lengkap', 'Pastikan Anda mengisi semua kolom.');
     }
-  };
-
-  const handleDeleteArticle = async () => {
-    Alert.alert(
-      'Konfirmasi Hapus',
-      'Yakin ingin menghapus artikel ini?',
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus',
-          style: 'destructive',
-          onPress: async () => {
-            const savedArticles = await AsyncStorage.getItem('articles');
-            const existingArticles = savedArticles ? JSON.parse(savedArticles) : [];
-
-            const updatedArticles = existingArticles.filter((a) => a.id !== article.id);
-
-            await AsyncStorage.setItem('articles', JSON.stringify(updatedArticles));
-            Alert.alert('Dihapus', `Artikel "${article.title}" berhasil dihapus.`);
-            navigation.navigate('Discover');
-          },
-        },
-      ]
-    );
   };
 
   if (!article) return null;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Edit Artikel</Text>
-
       <TextInput
         style={styles.input}
         placeholder="Judul Artikel"
         value={title}
         onChangeText={setTitle}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Deskripsi Artikel"
         value={description}
         onChangeText={setDescription}
       />
-
       <TextInput
         style={styles.input}
         placeholder="URL Gambar (opsional)"
         value={image}
         onChangeText={setImage}
       />
-
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
-        <Text style={styles.saveButtonText}>Simpan Perubahan</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteArticle}>
-        <Text style={styles.deleteButtonText}>Hapus Artikel</Text>
-      </TouchableOpacity>
+      <Button title="Simpan Perubahan" onPress={handleSaveChanges} color="#FF6F00" />
     </View>
   );
 };
@@ -127,46 +82,16 @@ const EditArticle = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
-    padding: 16,
+    backgroundColor: '#1e1e1e',
+    padding: 20,
     paddingTop: 40,
   },
-  header: {
-    fontSize: 18,
-    fontFamily: fontType['Montserrat-Bold'],
-    color: colors.primary,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
   input: {
-    backgroundColor: colors.white,
-    marginBottom: 12,
+    backgroundColor: '#2c2c2c',
     padding: 10,
+    marginBottom: 12,
     borderRadius: 8,
-    fontSize: 16,
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontFamily: fontType['Montserrat-Bold'],
-  },
-  deleteButton: {
-    backgroundColor: colors.red || '#FF3B30',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  deleteButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontFamily: fontType['Montserrat-Bold'],
+    color: '#fff',
   },
 });
 
