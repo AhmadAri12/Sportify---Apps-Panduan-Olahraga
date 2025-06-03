@@ -8,8 +8,6 @@ const ProfileCard = () => {
         source={{ uri: 'https://i.pravatar.cc/150?img=11' }}
         style={styles.avatar}
       />
-      <Text style={styles.name}>Aharfi</Text>
-      <Text style={styles.email}>Aharfi@gmail.com</Text>
     </View>
   );
 };

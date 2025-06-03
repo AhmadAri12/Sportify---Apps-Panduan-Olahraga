@@ -1,62 +1,62 @@
-import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome5';
-import ProfileCard from '../../components/ProfileCard';
-import WorkoutCard from '../../components/WorkoutCard';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 import { colors, fontType } from '../../theme';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const workouts = [
-    {
-      id: 1,
-      title: 'Full Body Workout',
-      image: 'https://mealfit.id/hubfs/Jenis-jenis-Program-Full-Body-Workout-dan-Tips-Rahasianya---001.webp',
-      calories: '980 Kcal',
-      progress: 70
-    },
-    {
-      id: 2,
-      title: 'Upper Body Workout',
-      image: 'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2020/12/Skinny-Guy-With-A-Beard-Performing-A-Workoug-For-Skinny-People.jpg?w=1109&quality=86&strip=all',
-      calories: '980 Kcal',
-      progress: 45
-    },
-    {
-      id: 3,
-      title: 'Cardio Routine',
-      image: 'https://cdn.muscleandstrength.com/sites/default/files/field/feature-image/workout/4-killer-treadmill-routines-feature.jpg',
-      calories: '980 Kcal',
-      progress: 80
-    },
-  ];
+  // Mengambil data pengguna dari Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const db = getFirestore();
+        const docRef = doc(db, 'users', 'users_01'); // Pastikan 'users_01' sesuai dengan ID pengguna di Firestore
+        const snapshot = await getDoc(docRef);
+        if (snapshot.exists()) {
+          console.log('User data:', snapshot.data());  // Debugging log
+          setUserData(snapshot.data());
+        } else {
+          console.log("No data found for this user");
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Menampilkan loading indicator jika data belum ada
+  if (loading || !userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container}>
       <Text style={styles.header}>Profil Saya</Text>
-      <ProfileCard />
 
-      <Pressable
-        style={styles.achievementCard}
-        onPress={() => navigation.navigate('AchievementScreen')}
-      >
-        <Icon name="trophy" size={20} color={colors.white} />
-        <Text style={styles.achievementText}>Achievement</Text>
-      </Pressable>
+      <View style={styles.profileContainer}>
+        {/* Gambar Profil */}
+        {userData.image && (
+          <Image source={{ uri: userData.image }} style={styles.profileImage} />
+        )}
 
-      <Text style={styles.subHeader}>Latihan yang Sedang Dijalani</Text>
-      <View style={styles.listContainer}>
-        {workouts.map(workout => (
-          <WorkoutCard
-            key={workout.id}
-            title={workout.title}
-            calories={workout.calories}
-            image={workout.image}
-            progress={workout.progress}
-          />
-        ))}
+        {/* Informasi Pengguna */}
+        <View style={styles.userInfo}>
+          <Text style={styles.userInfoText}>Nama: {userData.nama}</Text>
+          <Text style={styles.userInfoText}>Telepon: {userData.phone}</Text>
+          <Text style={styles.userInfoText}>Jenis Pengguna: {userData.userType}</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -77,31 +77,43 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  subHeader: {
-    fontSize: 18,
-    color: colors.white,
-    fontFamily: fontType['Montserrat-SemiBold'],
+  profileContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 20,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 16,
   },
-  listContainer: {
-    gap: 16,
-    marginBottom: 30,
+  userInfo: {
+    alignSelf: 'flex-start',
+    marginTop: 20, // Menambahkan jarak antara gambar dan informasi
   },
-  achievementCard: {
-    backgroundColor: colors.grey || '#2C2C2E',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#444',
-  },
-  achievementText: {
+  userInfoText: {
     fontSize: 16,
+    marginVertical: 4,
     color: colors.white,
-    fontFamily: fontType['Montserrat-SemiBold'],
+    fontFamily: fontType['Montserrat-Regular'],
+  },
+  editButton: {
+    marginTop: 16,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  editButtonText: {
+    color: colors.black,
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

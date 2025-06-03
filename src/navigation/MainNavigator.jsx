@@ -12,6 +12,8 @@ export default function MainNavigator() {
       <Stack.Screen name="MainTabs" component={BottomTabNavigation} />
       <Stack.Screen name="ArticleDetail" component={ArticleDetailScreen} />
       <Stack.Screen name="AddArticle" component={AddArticleScreen} />
+      <Stack.Screen name="ProfileMain" component={ProfileScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfile} />
     </Stack.Navigator>
   );
 }
